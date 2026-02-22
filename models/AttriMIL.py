@@ -62,8 +62,10 @@ class AttriMIL(nn.Module):
         h = self.alignment(h)
         # ---------------------------------------------------------
         h = h + self.adaptor(h)
-        A_raw = torch.empty(self.n_classes, h.size(0), ) # N x 1
-        instance_score = torch.empty(1, self.n_classes, h.size(0)).float().to(h.device)
+        # A_raw = torch.empty(self.n_classes, h.size(0), ) # N x 1 # Updated -> Tensor
+        A_raw = torch.empty(self.n_classes, h.size(0), device=h.device)
+        # instance_score = torch.empty(1, self.n_classes, h.size(0)).float().to(h.device) # Updated better
+        instance_score = torch.empty(1, self.n_classes, h.size(0), device=h.device).float()
         for c in range(self.n_classes):
             A, h = self.attention_nets[c](h)
             A = torch.transpose(A, 1, 0)  # 1 x N
