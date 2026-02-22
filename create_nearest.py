@@ -3,16 +3,30 @@ import h5py
 import numpy as np
 from sklearn.neighbors import NearestNeighbors
 from tqdm import tqdm
+import shutil
+import argparse # اضافه شد
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="هماهنگ‌سازی دیتا با استاندارد AttriMIL و محاسبه نزدیک‌ترین همسایه‌ها")
+    
+    parser.add_argument('--save_dir', type=str, 
+                        default='/content/AttriMIL_Workspace/data/h5_coords_files',
+                        help='مسیر نهایی برای ذخیره فایل‌های پردازش شده')
+    
+    return parser.parse_args()
 
 def main():
+    args = parse_args() 
+    
     raw_data_dirs = ['/content/extracted_features/TCGA-LUAD', '/content/extracted_features/TCGA-LUSC']
-    save_dir = '/content/AttriMIL_Workspace/data/h5_coords_files'
+    save_dir = args.save_dir 
+    
     os.makedirs(save_dir, exist_ok=True)
-
     print("در حال هماهنگ‌سازی دیتا با استاندارد AttriMIL...")
-
     for data_dir in raw_data_dirs:
-        if not os.path.exists(data_dir): continue
+        if not os.path.exists(data_dir): 
+            continue
+            
         h5_files = [f for f in os.listdir(data_dir) if f.endswith('.h5')]
         
         for name in tqdm(h5_files):
@@ -31,7 +45,9 @@ def main():
                     h5_out.create_dataset('nearest', data=nearest)
                     
             except Exception as e:
-                print(f"Error processing {name}: {e}")
+                print(f"❌ Error processing {name}: {e}")
+        
+        shutil.rmtree(data_dir)
 
 if __name__ == "__main__":
     main()
