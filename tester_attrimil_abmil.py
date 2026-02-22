@@ -17,9 +17,7 @@ from sklearn.metrics import auc as calc_auc
 from models.AttriMIL import AttriMIL
 from utils import *
 
-
 class Accuracy_Logger(object):
-    """Accuracy logger"""
     def __init__(self, n_classes):
         super().__init__()
         self.n_classes = n_classes
@@ -34,23 +32,13 @@ class Accuracy_Logger(object):
         self.data[Y]["count"] += 1
         self.data[Y]["correct"] += (Y_hat == Y)
     
-    def log_batch(self, Y_hat, Y):
-        Y_hat = np.array(Y_hat).astype(int)
-        Y = np.array(Y).astype(int)
-        for label_class in np.unique(Y):
-            cls_mask = Y == label_class
-            self.data[label_class]["count"] += cls_mask.sum()
-            self.data[label_class]["correct"] += (Y_hat[cls_mask] == Y[cls_mask]).sum()
-    
     def get_summary(self, c):
         count = self.data[c]["count"] 
         correct = self.data[c]["correct"]
-        
         if count == 0: 
             acc = None
         else:
             acc = float(correct) / count
-        
         return acc, correct, count
 
 def summary(model, loader, n_classes):
@@ -66,41 +54,33 @@ def summary(model, loader, n_classes):
     slide_ids = loader.dataset.slide_data['slide_id']
     patient_results = {}
     for batch_idx, (data, label) in enumerate(loader):
-        data, label = data.to(device), label.to(device)
+        data, label = data.cuda(), label.cuda()
         slide_id = slide_ids.iloc[batch_idx]
+        
         with torch.inference_mode():
-            logits, Y_prob, Y_hat, attribute_score, results_dict = model(data)
+            # FIXED: Added *rest to handle the extra Vision-Language variables safely
+            logits, Y_prob, Y_hat, *rest = model(data)
+            
         acc_logger.log(Y_hat, label)
 
         probs = Y_prob.cpu().numpy()
-        
         all_probs[batch_idx] = probs
         all_labels[batch_idx] = label.item()
         all_preds[batch_idx] = Y_hat.item()
         
         patient_results.update({slide_id: {'slide_id': np.array(slide_id), 'prob': probs, 'label': label.item()}})
-        
         error = calculate_error(Y_hat, label)
         test_error += error
 
-    del data
     test_error /= len(loader)
 
     aucs = []
     if len(np.unique(all_labels)) == 1:
         auc_score = -1
-
     else: 
         if n_classes == 2:
             auc_score = roc_auc_score(all_labels, all_probs[:, 1])
         else:
-            binary_labels = label_binarize(all_labels, classes=[i for i in range(n_classes)])
-            for class_idx in range(n_classes):
-                if class_idx in all_labels:
-                    fpr, tpr, _ = roc_curve(binary_labels[:, class_idx], all_probs[:, class_idx])
-                    aucs.append(calc_auc(fpr, tpr))
-                else:
-                    aucs.append(float('nan'))
             binary_labels = label_binarize(all_labels, classes=[i for i in range(n_classes)])
             fpr, tpr, _ = roc_curve(binary_labels.ravel(), all_probs.ravel())
             auc_score = calc_auc(fpr, tpr)
@@ -114,37 +94,42 @@ def summary(model, loader, n_classes):
 if __name__ == "__main__":
     import time
     start_time = time.time()
-    save_dir = './results/timing_test/'
-    csv_path = '/data1/ceiling/workspace/AttriMIL_v2/dataset_csv/camelyon16_test.csv'
-    data_dir = '/data2/clh/camelyon16/resnet18_simclr/'
-    weight_dir = '/data1/ceiling/workspace/MIL/AttriMIL/save_weights/camelyon16_attrimil_simclr/'
-    split_path = '/data1/ceiling/workspace/AttriMIL_v2/splits/camelyon16/'
-    # {'NORM':0, 'HP':1, 'TA.HG':2,'TA.LG':3, 'TVA.HG':4, 'TVA.LG':5}
-    # {'LUAD':0, 'LUSC':1}
-    # {'normal_tissue':0, 'tumor_tissue':1}
+    
+    # FIXED: Updated all paths to map to Colab and Google Drive
+    save_dir = '/content/drive/MyDrive/AttriMIL_Test_Results/'
+    csv_path = './dataset_csv/test_data.csv'
+    data_dir = '/content/extracted_features/'
+    weight_dir = '/content/drive/MyDrive/AttriMIL_Weights/'
+    
+    # FIXED: Added the TCGA labels specific to your project
+    label_dict = {'TCGA-LUAD':0, 'TCGA-LUSC':1}
+    
     dataset = Generic_MIL_Dataset(csv_path = csv_path,
                                   data_dir = data_dir,
                                   shuffle = False, 
                                   print_info = True,
-                                  label_dict = {'normal_tissue':0, 'tumor_tissue':1},
+                                  label_dict = label_dict,
                                   patient_strat=False,
                                   ignore=[])
+                                  
     os.makedirs(save_dir, exist_ok=True)
     model = AttriMIL(dim=512, n_classes=2).cuda()
-    # folds = [0, 1, 2, 3, 4]
+    
     folds = [0]
-    ckpt_paths = [os.path.join(weight_dir, 's_{}_checkpoint.pt'.format(fold)) for fold in folds]
+    # FIXED: Re-routed to the specific "0" folder seen in your Google Drive image
+    ckpt_paths = [os.path.join(weight_dir, str(fold), 's_{}_checkpoint.pt'.format(fold)) for fold in folds]
+    
     all_results = []
     all_auc = []
     all_acc = []
-    csv_path = [split_path + 'splits_{}.csv'.format(i) for i in range(4)]
+    
     for ckpt_idx in range(len(ckpt_paths)):
-        # train_dataset, val_dataset, test_dataset = dataset.return_splits(from_id=False, csv_path=csv_path[ckpt_idx])
-        # loader = get_split_loader(test_dataset, testing = False)
         loader = get_simple_loader(dataset)
         model.load_state_dict(torch.load(ckpt_paths[ckpt_idx]))
         patient_results, test_error, auc, df, acc_logger = summary(model, loader, n_classes=2)
-        all_results.append(all_results)
+        
+        # FIXED: Prevented the infinite nested array bug
+        all_results.append(patient_results)
         all_auc.append(auc)
         all_acc.append(1-test_error)
         df.to_csv(os.path.join(save_dir, 'fold_{}.csv'.format(folds[ckpt_idx])), index=False)
@@ -154,4 +139,5 @@ if __name__ == "__main__":
     final_df.to_csv(os.path.join(save_dir, save_name))
     end_time = time.time()
     elapsed_time = end_time - start_time
-    print(f"计时结果: 耗时{elapsed_time}秒")
+    print(f"✅ Test Complete: Evaluated in {elapsed_time:.2f} seconds.")
+    print(f"Results saved to: {save_dir}")
