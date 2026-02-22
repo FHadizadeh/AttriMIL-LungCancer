@@ -31,10 +31,18 @@ class Attn_Net_Gated(nn.Module):
 
 class AttriMIL(nn.Module): 
     '''
-    Multi-Branch ABMIL with constraints
+    Multi-Branch ABMIL with constraints - Updated for 1536-dim GigaPath Features
     '''
     def __init__(self, n_classes=2, dim=512):
         super().__init__()
+        
+        # ---------------------------------------------------------
+        # لایه جدید: کاهش ابعاد فیچرهای GigaPath از 1536 به 512
+        self.alignment = nn.Sequential(
+            nn.Linear(1536, dim),
+            nn.ReLU()
+        )
+        # ---------------------------------------------------------
         self.adaptor = nn.Sequential(nn.Linear(dim, dim//2),
                                      nn.ReLU(),
                                      nn.Linear(dim // 2 , dim))
@@ -49,6 +57,10 @@ class AttriMIL(nn.Module):
         self.bias = nn.Parameter(torch.zeros(n_classes), requires_grad=True)
     
     def forward(self, h):
+        # ---------------------------------------------------------
+        # تبدیل ابعاد: (N, 1536) -> (N, 512)
+        h = self.alignment(h)
+        # ---------------------------------------------------------
         h = h + self.adaptor(h)
         A_raw = torch.empty(self.n_classes, h.size(0), ) # N x 1
         instance_score = torch.empty(1, self.n_classes, h.size(0)).float().to(h.device)
