@@ -50,21 +50,26 @@ Beyond standard classification, this repository includes tools to validate the m
 
 ### 1. Spatial Graph Construction
 Generate neighbor relationships for all patches:
-` ``bash
+` ``
+bash
 python create_nearest.py
 
 ### 2. Dataset Splitting
 Generate the splits_0.csv file (Default: 80% Train, 10% Val, 10% Test):
-` ``bash
+` ``
+bash
 python generate_splits.py
 
 ### 3. Training
 Start the training process. The model will automatically handle feature alignment and apply spatial constraints:
-` ``bash
+` ``
+bash
 python trainer_attrimil_abmil.py --n_classes 2 --batch_size 1 --lr 2e-4
 
 ### 4. Evaluation & Attribute Extraction
 Run the testing pipeline to evaluate the saved weights against the test set, generate ROC/Confusion Matrix plots, and extract the continuous visual scores for clinical alignment:
-` ``bash
+` ``
+bash
 python tester_attrimil_abmil.py
+
 
