@@ -26,6 +26,8 @@ Generate neighbor relationships for all patches:
 ```bash
 python create_nearest.py
 
+```
+
 ### 2. Dataset Splitting
 
 Generate the `splits_0.csv` file (Default: 80% Train, 10% Val, 10% Test):
