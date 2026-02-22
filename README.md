@@ -1,32 +1,30 @@
-
-```markdown
 # AttriMIL with GigaPath Integration for NSCLC Classification
 
-This repository provides an optimized, debugged, and high-performance implementation of the **AttriMIL** (Attribute-based Multi-Instance Learning) framework. The model is specifically adapted for **TCGA-NSCLC** subtyping (LUAD vs. LUSC) using features extracted from the **GigaPath** foundation model.
+This repository provides an optimized and debugged implementation of the **AttriMIL** framework for **TCGA-NSCLC** classification using **GigaPath** features.
 
 ## 🌟 Key Engineering Highlights & Bug Fixes
-This implementation addresses several critical issues found in original academic MIL repositories, ensuring stability and accuracy for large-scale pathological analysis:
 
-- **Spatial Constraint Dimension Fix:** Resolved a major `IndexError` in the `spatial_constraint` module. The original code incorrectly indexed 3D attribute scores; we implemented a precise mapping (`A[0, c]`) to align attention scores with the 1D k-NN spatial graph coordinates.
-- **Batch Dimension Management:** Fixed recurring `IndexError` during the training/validation loops by implementing robust `.squeeze(0)` operations to handle PyTorch's default batching behavior for Whole Slide Images (WSIs).
-- **GigaPath Foundation Model Alignment:** Adapted the architecture to handle 1536-dimensional features from **GigaPath**, ensuring the attention mechanism properly captures high-resolution morphological details.
-- **Enhanced Logging System:** Corrected mismatched variables in the logging module that previously caused incorrect reporting of `bag_size` and class labels.
+This implementation addresses several critical issues found in original academic MIL repositories to ensure stability and accuracy:
+
+- **Spatial Constraint Dimension Fix:** Resolved a major `IndexError` in the `spatial_constraint` module. We implemented a precise mapping (`A[0, c]`) to align attention scores with the 1D k-NN spatial graph coordinates.
+- **Batch Dimension Management:** Fixed recurring `IndexError` during training/validation loops by implementing robust `.squeeze(0)` operations.
+- **GigaPath Foundation Model Alignment:** Adapted the architecture to handle 1536-dimensional features from the GigaPath vision transformer.
+- **Enhanced Logging System:** Corrected mismatched variables that previously caused incorrect reporting of `bag_size` and class labels.
 
 ## 📂 Project Structure
-- `create_nearest.py`: Constructs k-nearest neighbor (k-NN) spatial graphs for patch-level relationships based on (x, y) coordinates.
-- `generate_splits.py`: A deterministic utility for dataset splitting (Train/Val/Test) to ensure reproducible 5-fold cross-validation.
-- `create_csv.py`: Maps Whole Slide Images (WSI) to diagnostic labels and manages metadata.
-- `trainer_attrimil_abmil.py`: The core training engine, optimized for foundation model features and multi-instance learning.
-- `constraints.py`: Contains the fixed and optimized Spatial and Rank constraint loss functions.
+
+- `create_nearest.py`: Constructs k-nearest neighbor (k-NN) spatial graphs for patch-level relationships.
+- `generate_splits.py`: A deterministic utility for 80-10-10 dataset splitting.
+- `create_csv.py`: Maps Whole Slide Images (WSI) to diagnostic labels.
+- `trainer_attrimil_abmil.py`: The core training engine.
+- `constraints.py`: Contains the fixed Spatial and Rank constraint loss functions.
 
 ## 💻 Usage Guide
 
 ### 1. Spatial Graph Construction
-Generate neighbor relationships for all patches within each slide. This is required for the Spatial Constraint module:
+Generate neighbor relationships for all patches:
 ```bash
 python create_nearest.py
-
-```
 
 ### 2. Dataset Splitting
 
