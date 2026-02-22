@@ -79,7 +79,11 @@ def summary(model, loader, n_classes):
         
         slide_id = slide_ids.iloc[batch_idx]
         with torch.inference_mode():
-            ins_prediction, bag_prediction, _, _ = model(data)
+            # ‌Bugge
+            # ins_prediction, bag_prediction, _, _ = model(data)
+
+            # خط اصلاح شده:
+            ins_prediction, bag_prediction, _, _, _ = model(data) # اضافه کردن یک زیرخط (Underscore) برای خروجی پنجم
         Y_hat = torch.topk(bag_prediction.view(1, -1), 1, dim = 1)[1]
         acc_logger.log(Y_hat, label)
 
@@ -170,7 +174,7 @@ def train_abmil(datasets,
             retain += 1
             print("Retain of early stopping: {} / {}".format(retain, 20))
         if early_stopping:
-            if retain > 20 and epoch > 50:
+            if retain > 15: 
                 print("Early stopping")
                 break
                 
@@ -290,7 +294,7 @@ if __name__ == "__main__":
     csv_path = '/content/AttriMIL-LungCancer/datasets/tcga_nsclc_labels.csv'
     data_dir = '/content/AttriMIL_Workspace/data'  
     split_path = '/content/AttriMIL-LungCancer/splits/'
-    save_dir = 'content/drive/MyDrive/AttriMIL_Weights/'
+    save_dir = '/content/drive/MyDrive/AttriMIL_Weights/'
     # './save_weights/tcga_nsclc_100/'
     
     os.makedirs(save_dir, exist_ok=True)
