@@ -3,8 +3,8 @@ import numpy as np
 import os
 
 def generate_splits():
-    input_csv = '/content/AttriMIL/datasets/tcga_nsclc_labels.csv'
-    output_dir = '/content/AttriMIL/splits'
+    input_csv = '/content/AttriMIL-LungCancer/datasets/tcga_nsclc_labels.csv'
+    output_dir = '/content/AttriMIL-LungCancer/splits'
     output_file = os.path.join(output_dir, 'splits_0.csv')
 
     if not os.path.exists(input_csv):

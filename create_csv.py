@@ -5,7 +5,7 @@ def main():
     luad_dir = '/content/extracted_features/TCGA-LUAD'
     lusc_dir = '/content/extracted_features/TCGA-LUSC'
     
-    csv_dir = '/content/AttriMIL/datasets'
+    csv_dir = '/content/AttriMIL-LungCancer/datasets'
     os.makedirs(csv_dir, exist_ok=True)
     csv_save_path = os.path.join(csv_dir, 'tcga_nsclc_labels.csv')
 

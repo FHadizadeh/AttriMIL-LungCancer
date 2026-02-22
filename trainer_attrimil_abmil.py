@@ -287,9 +287,9 @@ def validate(epoch, model, loader, n_classes, writer, loss_fn):
 
 # ******** Updated ********
 if __name__ == "__main__":
-    csv_path = '/content/AttriMIL/datasets/tcga_nsclc_labels.csv'
+    csv_path = '/content/AttriMIL-LungCancer/datasets/tcga_nsclc_labels.csv'
     data_dir = '/content/AttriMIL_Workspace/data'  
-    split_path = '/content/AttriMIL/splits/'
+    split_path = '/content/AttriMIL-LungCancer/splits/'
     save_dir = 'content/drive/MyDrive/AttriMIL_Weights/'
     # './save_weights/tcga_nsclc_100/'
     
