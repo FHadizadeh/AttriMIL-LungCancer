@@ -198,7 +198,7 @@ def train_loop(epoch, model, loader, optimizer, n_classes, writer, loss_fn):
         
         # حذف بُعد اضافی
         data = data.squeeze(0)
-        nearest = nearest.squeeze(0)
+        nearest = nearest.squeeze(0).to(device)
         
         logits, Y_prob, Y_hat, attribute_score, results_dict = model(data)
         acc_logger.log(Y_hat, label)
