@@ -12,7 +12,8 @@ def spatial_constraint(A, n_classes, nearest, ks=3):
     loss_spatial = torch.tensor(0.0).to(device)
     # N = A.shape[-1]
     for c in range(1, n_classes):
-        score = A[:, c] # N
+        # score = A[:, c] # N -> UPDATED
+        score = A[0, c] # N  <---  علامت : تبدیل شد به 0
         nearest_score = score[nearest] # N ks^2-1
         abs_nearest = torch.abs(nearest_score)
         max_indices = torch.argmax(abs_nearest, dim=1)
