@@ -72,6 +72,11 @@ def summary(model, loader, n_classes):
         
     for batch_idx, (data, label, coords, nearest) in enumerate(loader):
         data, label = data.to(device), label.to(device)
+        
+        # --- FIX ---
+        data = data.squeeze(0)
+        # -----------
+        
         slide_id = slide_ids.iloc[batch_idx]
         with torch.inference_mode():
             ins_prediction, bag_prediction, _, _ = model(data)
@@ -191,6 +196,10 @@ def train_loop(epoch, model, loader, optimizer, n_classes, writer, loss_fn):
     for batch_idx, (data, label, coords, nearest) in enumerate(loader):
         data, label = data.to(device), label.to(device)
         
+        # حذف بُعد اضافی
+        data = data.squeeze(0)
+        nearest = nearest.squeeze(0)
+        
         logits, Y_prob, Y_hat, attribute_score, results_dict = model(data)
         acc_logger.log(Y_hat, label)
         loss_bag = loss_fn(logits, label)
@@ -200,7 +209,7 @@ def train_loop(epoch, model, loader, optimizer, n_classes, writer, loss_fn):
         loss = loss_bag + 1.0 * loss_spa + 5.0 * loss_rank
         
         loss_bag_value = loss_bag.item()
-        loss_ins_value = loss_ins.item()
+        # loss_ins_value = loss_ins.item() # اصلا تعریفش نکرده! خطای کپی‌پیست نویسنده
         loss_spa_value = loss_spa.item()
         loss_rank_value = loss_rank.item()
         loss_value = loss.item()
@@ -209,8 +218,9 @@ def train_loop(epoch, model, loader, optimizer, n_classes, writer, loss_fn):
         bag_loss += loss_bag
         
         if (batch_idx + 1) % 20 == 0:
-            print('batch {}, loss: {:.4f}, loss_bag: {:.4f}, loss_spa: {:.4f}, bag_size: {}'.format(batch_idx, loss_value, loss_bag_value, loss_spa_value, label.item(), data.size(0)))
-            
+            # print('batch {}, loss: {:.4f}, loss_bag: {:.4f}, loss_spa: {:.4f}, bag_size: {}'.format(batch_idx, loss_value, loss_bag_value, loss_spa_value, label.item(), data.size(0))) # اشتباه چاپ میکنه!
+            # هم لیبل و هم تعداد پچ‌ها (bag_size) رو به درستی چاپ می‌کنیم
+            print('batch {}, loss: {:.4f}, loss_bag: {:.4f}, loss_spa: {:.4f}, label: {}, bag_size: {}'.format(batch_idx, loss_value, loss_bag_value, loss_spa_value, int(label.item()), data.size(0)))
         loss.backward()
         optimizer.step()
         optimizer.zero_grad()
@@ -242,6 +252,10 @@ def validate(epoch, model, loader, n_classes, writer, loss_fn):
     with torch.no_grad():
         for batch_idx, (data, label, coords, nearest) in enumerate(loader):
             data, label = data.to(device, non_blocking=True), label.to(device, non_blocking=True)
+            
+            # --- FIX ---
+            data = data.squeeze(0)
+            # -----------
 
             logits, Y_prob, Y_hat, attribute_score, results_dict = model(data)
             acc_logger.log(Y_hat, label)
@@ -271,23 +285,28 @@ def validate(epoch, model, loader, n_classes, writer, loss_fn):
 
     return val_loss
 
+# ******** Updated ********
 if __name__ == "__main__":
-    csv_path = '/data1/ceiling/workspace/AttriMIL_v2/dataset_csv/camelyon16_total.csv'
-    data_dir = '/data2/clh/camelyon16/resnet18_imagenet/'
-    split_path = '/data1/ceiling/workspace/AttriMIL_v2/splits/camelyon16_100/'
-    save_dir = './save_weights/camelyon16_attrimil_imagenet_100/'
-    # {'normal_tissue':0, 'tumor_tissue':1}
+    csv_path = '/content/AttriMIL/datasets/tcga_nsclc_labels.csv'
+    data_dir = '/content/AttriMIL_Workspace/data'  
+    split_path = '/content/AttriMIL/splits/'
+    save_dir = 'content/drive/MyDrive/AttriMIL_Weights/'
+    # './save_weights/tcga_nsclc_100/'
+    
+    os.makedirs(save_dir, exist_ok=True)
     
     dataset = Generic_MIL_Dataset(csv_path = csv_path,
                                   data_dir = data_dir,
                                   shuffle = False, 
                                   seed = 1, 
                                   print_info = True,
-                                  label_dict = {'normal_tissue':0, 'tumor_tissue':1},
+                                  label_dict = {0:0, 1:1}, 
                                   patient_strat=False,
                                   ignore=[])
-    csv_path = [split_path + 'splits_{}.csv'.format(i) for i in range(5)]
-    for step, name in enumerate(csv_path):
+    
+    csv_paths = [split_path + 'splits_0.csv']
+    
+    for step, name in enumerate(csv_paths):
         train_dataset, val_dataset, test_dataset = dataset.return_splits(from_id=False, csv_path=name)
         train_abmil((train_dataset, val_dataset, test_dataset),
                      save_path=save_dir,
@@ -295,5 +314,5 @@ if __name__ == "__main__":
                      n_classes = 2,
                      fold = step,
                      writer_flag = True,
-                     max_epoch = 200,
+                     max_epoch = 50,     
                      early_stopping = False,)
