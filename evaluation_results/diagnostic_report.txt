@@ -1,0 +1,21 @@
+========================================
+🏥 COMPREHENSIVE DIAGNOSTIC METRICS
+========================================
+Accuracy:      0.9320
+AUC-ROC:       0.9780
+F1-Score:      0.9323
+Precision:     0.9286 (Positive Predictive Value)
+Recall:        0.9360 (Sensitivity / True Positive Rate)
+Specificity:   0.9280 (True Negative Rate)
+========================================
+
+Detailed Classification Report:
+               precision    recall  f1-score   support
+
+TCGA-LUAD (0)       0.94      0.93      0.93       250
+TCGA-LUSC (1)       0.93      0.94      0.93       250
+
+     accuracy                           0.93       500
+    macro avg       0.93      0.93      0.93       500
+ weighted avg       0.93      0.93      0.93       500
+
