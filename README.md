@@ -22,6 +22,7 @@ This implementation addresses several critical issues found in the original acad
 * **Spatial Constraint Dimension Fix:** Resolved a major `IndexError` in the `spatial_constraint` module. We implemented a precise mapping (`A[0, c]`) to align attribute scores with the 1D k-NN spatial graph coordinates dynamically.
 * **Batch Dimension Management:** Fixed recurring `IndexError` issues during training and validation loops by implementing robust `.squeeze(0)` operations, ensuring compatibility with pre-extracted UNI feature tensors.
 * **Early Stopping & Resource Optimization:** Refactored the hardcoded early-stopping mechanism. By removing rigid epoch constraints (e.g., `epoch > 50`) and relying purely on a patience threshold of 15 epochs, we prevented overfitting on highly expressive foundation features and significantly reduced GPU compute time.
+* **Enhanced Logging System:** Corrected mismatched variables that previously caused incorrect reporting of `bag_size` and class labels.
 * **Visual Interpretability & Clinical Alignment:** Instead of black-box predictions, we built a custom inference pipeline to extract continuous spatial `attribute_score`s. This maps the model's internal graph attention onto 2D heatmaps, enabling direct visual correlation between high-attention patches and actual tumor regions documented in CDSA/TCGA pathology reports.
 
 ## 📂 Project Structure
@@ -91,27 +92,30 @@ Beyond standard classification, this repository includes tools to validate the m
 
 ### 1. Spatial Graph Construction
 Generate neighbor relationships for all patches:
-` ``
-bash
+` ``bash
 python create_nearest.py
+
+` ``
 
 ### 2. Dataset Splitting
 Generate the splits_0.csv file (Default: 90% Train, 10% Val):
-` ``
-bash
+` ``bash
 python generate_splits.py
+
+` ``
 
 ### 3. Training
 Start the training process. The model will automatically handle feature alignment and apply spatial constraints:
-` ``
-bash
+` ``bash
 python trainer_attrimil_abmil.py --n_classes 2 --batch_size 1 --lr 2e-4
+
+` ``
 
 ### 4. Evaluation & Attribute Extraction
 Run the testing pipeline to evaluate the saved weights against the test set, generate ROC/Confusion Matrix plots, and extract the continuous visual scores for clinical alignment:
-` ``
-bash
+` ``bash
 python tester_attrimil_abmil.py
 
 ` ``
+
 
