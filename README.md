@@ -63,21 +63,21 @@ Evaluated on **500 unseen slides** (250 LUAD, 250 LUSC) using 1000-iteration Mon
 ### 1. Spatial Attribute Heatmaps
 
 The model generates continuous scoring maps highlighting diagnostic regions. High-score regions (Red) indicate strong morphological evidence for the predicted class.
-<img src="./evaluation_results/visualizations/heatmap.png)" width="60%">
+<img src="./evaluation_results/visualizations/heatmap.png" width="60%">
 
 ### 2. Attribute-Specific Patch Analysis & Interpretations
 
 We utilize the **MBAS module** to extract representative patches for specific clinical concepts.
 
 * **A. Necrosis (Tissue Death):** * *Interpretation:* TOP patches localize to regions of **eosinophilic, amorphous debris** and nuclear fragmentation (karyorrhexis). BOTTOM patches show viable tumor clusters.
-* <img src="./evaluation_results/visualizations/necrosis_vis.png" width="60%">
+<img src="./evaluation_results/visualizations/necrosis_vis.png" width="60%">
 
 
 * **B. Keratinization (Squamous Marker):** * *Interpretation:* TOP patches focus on **keratin pearls** and dense, eosinophilic cytoplasm (LUSC markers). BOTTOM patches isolate irrelevant alveolar spaces.
-* <img src="./evaluation_results/visualizations/keratinization_vis.png)" width="60%"> 
+<img src="./evaluation_results/visualizations/keratinization_vis.png" width="60%"> 
 
 * **C. Differentiation (Architectural Maturity):** * *Interpretation:* TOP patches highlight **well-organized glandular structures** with distinct lumens (LUAD markers). BOTTOM patches capture anaplastic growth patterns.
-* <img src="./evaluation_results/visualizations/differentiation_vis.png)" width="60%">
+<img src="./evaluation_results/visualizations/differentiation_vis.png" width="60%">
 
 
 
