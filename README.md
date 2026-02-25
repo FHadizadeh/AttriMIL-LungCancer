@@ -79,6 +79,7 @@ We utilize the **MBAS module** to extract representative patches for specific cl
 
 * **C. Differentiation (Architectural Maturity):** * *Interpretation:* TOP patches highlight **well-organized glandular structures** with distinct lumens (LUAD markers). BOTTOM patches capture anaplastic growth patterns.
 * *Visual:* `evaluation_results/visualizations/differentiation_vis.png`
+!(evaluation_results/visualizations/differentiation_vis.png)
 
 
 
