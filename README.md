@@ -63,7 +63,9 @@ Evaluated on **500 unseen slides** (250 LUAD, 250 LUSC) using 1000-iteration Mon
 ### 1. Spatial Attribute Heatmaps
 
 The model generates continuous scoring maps highlighting diagnostic regions. High-score regions (Red) indicate strong morphological evidence for the predicted class.
-<img src="./evaluation_results/visualizations/heatmap.png" width="60%">
+<p align="center">
+  <img src="./evaluation_results/visualizations/heatmap.png" width="50%">
+</p>
 
 ### 2. Attribute-Specific Patch Analysis & Interpretations
 
